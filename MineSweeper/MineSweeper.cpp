@@ -6,10 +6,11 @@
 #include "Grid.h"
 
 #define MAX_LOADSTRING 100
-#define BOARDSIZE 10
-#define DIFFICULTY_PERC 0.1
+#define DEF_BOARDSIZE 18
+#define DIFFICULTY_PERC 0.10
 
-int NUM_BEES = (int)(BOARDSIZE*BOARDSIZE*DIFFICULTY_PERC);
+int BOARDSIZE = DEF_BOARDSIZE;
+int NUM_BEES = 30;
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -24,6 +25,19 @@ ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+
+
+// Function definition to change the size of the board according to user input
+void ChangeBoardSize(HWND hWnd, int lsize, int lNumBees)
+{
+	if (lsize != BOARDSIZE)
+	{
+		BOARDSIZE = lsize;
+		myGrid.Initialize(hWnd, BOARDSIZE, lNumBees);
+		InvalidateRect(hWnd, NULL, true);
+	}
+}
+
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -126,8 +140,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    int aRight = myGrid.Left() + (myGrid.Size() * myGrid.PixelLength());
    int aTop = myGrid.Top();
    int aBottom = myGrid.Top() + (myGrid.Size() * myGrid.PixelLength());
-   //SetWindowPos(hWnd, hWnd, aLeft, aTop, aRight, aBottom, NULL);
-   //AdjustWindowRect
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -163,6 +175,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
+			break;
+		case IDM_PRAB_RESTART:
+			myGrid.Initialize(hWnd, BOARDSIZE, NUM_BEES);
+			InvalidateRect(hWnd, NULL, true);
+			break;
+		case IDM_PRAB_SMALL_BOARD:
+			NUM_BEES = 15;
+			ChangeBoardSize(hWnd,10, NUM_BEES);
+			break;
+		case IDM_PRAB_MEDIUM_BOARD:
+			NUM_BEES = 30;
+			ChangeBoardSize(hWnd, 18, NUM_BEES);
+			break;
+		case IDM_PRAB_LARGE_BOARD:
+			NUM_BEES = 60;
+			ChangeBoardSize(hWnd, 25, NUM_BEES);
 			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
