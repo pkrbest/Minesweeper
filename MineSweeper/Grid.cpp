@@ -216,6 +216,23 @@ void Grid::ExposeNeighboringZeros(int i, int j)
 	}
 }
 
+void Grid::DisplayMessage(LPCWSTR aMainMessage, LPCWSTR aMenuItem)
+{
+	int msgboxID = MessageBox(mhWnd, aMainMessage, aMenuItem, MB_ICONINFORMATION | MB_RETRYCANCEL);
+	switch (msgboxID)
+	{
+	case IDRETRY:
+	{
+		Initialize(mhWnd, mSize,mNumBees);
+		InvalidateRect(mhWnd, NULL, true);
+		break;
+	}
+	case IDCANCEL:
+		// TODO: add code
+		break;
+	}
+}
+
 void Grid::Draw()
 {
 	if (!mhWnd) return;
@@ -225,8 +242,8 @@ void Grid::Draw()
 	HBRUSH hRedBrush = CreateSolidBrush(RGB(255, 0, 0));
 	HBRUSH hOldBrush;
 
-	if (mbLost) hOldBrush = (HBRUSH)SelectObject(hdc, hRedBrush); 
-	
+	if (mbLost) hOldBrush = (HBRUSH)SelectObject(hdc, hRedBrush);
+
 	for (int i = 0; i < mSize; ++i)
 	{
 		for (int j = 0; j < mSize; ++j)
@@ -251,21 +268,4 @@ void Grid::Draw()
 	else if (mbLost)
 		DisplayMessage((LPCWSTR)L"Sorry. You have Lost. Please try again.", (LPCWSTR)L"Sorry..");
 
-}
-
-void Grid::DisplayMessage(LPCWSTR aMainMessage, LPCWSTR aMenuItem)
-{
-	int msgboxID = MessageBox(mhWnd, aMainMessage, aMenuItem, MB_ICONINFORMATION | MB_RETRYCANCEL);
-	switch (msgboxID)
-	{
-	case IDRETRY:
-	{
-		Initialize(mhWnd, mSize,mNumBees);
-		InvalidateRect(mhWnd, NULL, true);
-		break;
-	}
-	case IDCANCEL:
-		// TODO: add code
-		break;
-	}
 }

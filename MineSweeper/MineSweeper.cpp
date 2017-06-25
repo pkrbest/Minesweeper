@@ -6,8 +6,8 @@
 #include "Grid.h"
 
 #define MAX_LOADSTRING 100
-#define BOARDSIZE 20
-#define DIFFICULTY_PERC 0.2
+#define BOARDSIZE 10
+#define DIFFICULTY_PERC 0.1
 
 int NUM_BEES = (int)(BOARDSIZE*BOARDSIZE*DIFFICULTY_PERC);
 

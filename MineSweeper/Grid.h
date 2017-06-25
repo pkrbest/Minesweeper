@@ -1,6 +1,5 @@
 #pragma once
 #include "Cell.h"
-#define DIFFICULY_PERC 0.1
 
 class Grid
 {

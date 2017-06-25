@@ -33,8 +33,8 @@ void Cell::Draw(HDC hdc, int aLeft, int aTop, int aRight, int aBottom, bool abLo
 
 	SelectObject(hdc, hOldBrush);
 	DeleteObject(hNewBrush);
-	if (mbHasBee) DrawBee(hdc, aLeft, aTop, aRight, aBottom);
-	//if (mbHasBee && IsExposed()) DrawBee(hdc,aLeft,aTop,aRight,aBottom);
+	//if (mbHasBee) DrawBee(hdc, aLeft, aTop, aRight, aBottom);
+	if (mbHasBee && IsExposed()) DrawBee(hdc,aLeft,aTop,aRight,aBottom);
 	else if (Neighbors() > 0 && IsExposed()) WriteText(hdc, aLeft, aTop, aRight, aBottom);
 
 }
