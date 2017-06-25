@@ -6,13 +6,17 @@
 #include "Grid.h"
 
 #define MAX_LOADSTRING 100
-#define BOARDSIZE 25
+#define BOARDSIZE 20
+#define DIFFICULTY_PERC 0.2
+
+int NUM_BEES = (int)(BOARDSIZE*BOARDSIZE*DIFFICULTY_PERC);
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 Grid myGrid;
+
 
 
 // Forward declarations of functions included in this code module:
@@ -117,7 +121,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
    
-   myGrid.Initialize(hWnd, BOARDSIZE);
+   myGrid.Initialize(hWnd, BOARDSIZE, NUM_BEES);
    int aLeft = myGrid.Left();
    int aRight = myGrid.Left() + (myGrid.Size() * myGrid.PixelLength());
    int aTop = myGrid.Top();

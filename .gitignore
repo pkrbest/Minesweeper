@@ -9,3 +9,5 @@ ipch/minesweeper-4c52e755/minesweeper-400460ea.ipch
 *.tlog
 Release/MineSweeper.exe
 *.suo
+Debug/
+ipch/

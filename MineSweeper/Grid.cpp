@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Grid.h"
 #include <stdlib.h>
+#include <time.h>
 
 Grid::Grid()
 {
@@ -8,6 +9,7 @@ Grid::Grid()
 	_CellInitialized = false;
 	mbLost = false;
 	mbWon = false;
+	mNumBees = -1;
 }
 
 Grid::~Grid()
@@ -15,13 +17,14 @@ Grid::~Grid()
 	DeleteCells();
 }
 
-void Grid::Initialize(HWND hWnd, int aGridSize)
+void Grid::Initialize(HWND hWnd, int aGridSize, int numBees)
 {
 	mhWnd = hWnd;
 	mSize = aGridSize;
 	_CellInitialized = false;
 	mbLost = false;
 	mbWon = false;
+	mNumBees = numBees;
 
 	RECT lpRect;
 	GetClientRect(mhWnd, &lpRect);
@@ -48,28 +51,65 @@ void Grid::InitializeCells()
 	
 	myCells = new Cell* [mSize];
 	for (int i = 0; i < mSize; ++i)
-	{
 		myCells[i] = new Cell[mSize];
-		for (int j = 0; j < mSize; ++j)
-		{
-			myCells[i][j].Neighbors() = 0;
 
-			if (((double)rand() / (double)RAND_MAX) < DIFFICULY_PERC)
-				myCells[i][j].AddBee();
-		}
-	}
+	DistributeBees();
 
 	for (int i = 0; i < mSize; ++i)
 	{
 		for (int j = 0; j < mSize; ++j)
 		{
 			if (myCells[i][j].HasBee()) continue;
-
 			CountBees(i, j);
 		}
 	}
 
 	_CellInitialized = true;
+}
+
+void Grid::DistributeBees()
+{
+	int iix(-1), jjy(-1);
+	srand(time(NULL));
+
+	for (int i = 0; i < mNumBees; ++i)
+	{
+		int randNumx = (long)rand() % 1000;
+		int randNumy = (long)rand() % 1000;
+
+		int ii = (int)(min((double)randNumx / 1000.0 * mSize, mSize - 1));
+		int jj = (int)(min((double)randNumy / 1000.0 * mSize, mSize - 1));
+
+		while (myCells[ii][jj].HasBee() || (ii == iix && jj == jjy))
+		{
+			int randNum = (long)rand() % 1000;
+			if (randNum < 245)
+			{
+				if (ii < mSize - 1) ii++;
+				else ii--;
+			}
+			else if (randNum < 495)
+			{
+				if (ii > 0) ii--;
+				else ii++;
+			}
+			else if (randNum < 745)
+			{
+				if (jj < mSize - 1) jj++;
+				else jj--;
+			}
+			else
+			{
+				if (jj > 0) jj--;
+				else jj++;
+			}
+		}
+
+		iix = ii;
+		jjy = jj;
+		myCells[ii][jj].AddBee();
+	}
+
 }
 
 void Grid::CountBees(int i, int j)
@@ -113,6 +153,7 @@ bool Grid::OnClick(long xx, long yy)
 	if (indexI < mSize && indexJ < mSize)
 	{
 		if (mbWon) return false;
+		if (myCells[indexI][indexJ].IsExposed()) return false;
 
 		myCells[indexI][indexJ].ExposeCell();
 		
@@ -219,7 +260,7 @@ void Grid::DisplayMessage(LPCWSTR aMainMessage, LPCWSTR aMenuItem)
 	{
 	case IDRETRY:
 	{
-		Initialize(mhWnd, mSize);
+		Initialize(mhWnd, mSize,mNumBees);
 		InvalidateRect(mhWnd, NULL, true);
 		break;
 	}

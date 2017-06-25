@@ -7,9 +7,10 @@ class Grid
 public:
 	Grid();
 	~Grid();
-	void Initialize(HWND hWnd, int asize);
+	void Initialize(HWND hWnd, int asize, int numBees);
 	void InitializeCells();
 	void CountBees(int i, int j);
+	void DistributeBees();
 	void DeleteCells();
 
 	void Draw();
@@ -31,6 +32,7 @@ private:
 	int mTop;
 	int mLeft;
 	int mPixelLength; // pixel size of each rectangle
+	int mNumBees;
 
 	Cell** myCells;
 	bool _CellInitialized;
