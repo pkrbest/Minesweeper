@@ -6,7 +6,7 @@
 #include "Grid.h"
 
 #define MAX_LOADSTRING 100
-#define BOARDSIZE 10
+#define BOARDSIZE 25
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
