@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Cell.h"
 #include <Windows.h>
+#include <windowsx.h>
 #include <sstream>
 
 Cell::Cell()
@@ -35,6 +36,7 @@ void Cell::Draw(HDC hdc, int aLeft, int aTop, int aRight, int aBottom, bool abLo
 	DeleteObject(hNewBrush);
 	//if (mbHasBee) DrawBee(hdc, aLeft, aTop, aRight, aBottom);
 	if (mbHasBee && IsExposed()) DrawBee(hdc,aLeft,aTop,aRight,aBottom);
+	else if (IsFlagged()) DrawFlag(hdc, aLeft, aTop, aRight, aBottom);
 	else if (Neighbors() > 0 && IsExposed()) WriteText(hdc, aLeft, aTop, aRight, aBottom);
 
 }
@@ -54,6 +56,57 @@ void Cell::DrawBee(HDC hdc, int aLeft, int aTop, int aRight, int aBottom)
 
 	SelectObject(hdc, hOldBrush);
 	DeleteObject(hNewBrush);
+}
+
+void Cell::DrawFlag(HDC hdc, int aLeft, int aTop, int aRight, int aBottom)
+{
+	int len = (aRight - aLeft);
+	double Ratio = 0.08;
+	double width = Ratio*len;
+	
+	double xx = (double)(aLeft)+((double)len * (double)0.25);
+	double yy = (double)(aTop)+((double)len * (double) 0.25);
+	double yy_end = yy + ((double)len / (double)2.0) + 1;
+	double xx_end = xx + ((double)len / (double)2.4);
+	double xx_extreme = xx_end + ((double)len / (double)10.0);
+	double yy_mid = yy + ((double)len / (double)6.0);
+	double yy_flag_end = yy + ((double)len * 0.3);
+
+	POINT polPoints[10];
+	polPoints[0] = { (int)xx, (int)yy };
+	polPoints[1] = { (int)xx_end, (int)yy };
+	polPoints[2] = { (int)((xx_extreme+xx_end+1)*0.5),(int)((yy_mid + yy + 1)*0.5) };
+	polPoints[3] = { (int)(xx_extreme), (int)(yy_mid) };
+	polPoints[4] = { (int)((xx_extreme + xx_end+ 1) *0.5), (int)((yy_mid + yy_flag_end + 1) *0.5) };
+	polPoints[5] = { (int)xx_end, (int)(yy_flag_end+width/2.0) };
+	polPoints[6] = { (int)xx, (int)yy_flag_end };
+	polPoints[7] = { (int)(xx + ((double)len / (double)20.0)), (int)((yy_mid + yy_flag_end) * 0.5) };
+	polPoints[8] = { (int)(xx + ((double)len / (double)10.0)), (int)(yy_mid) };
+	polPoints[9] = { (int)(xx + ((double)len / 15.0)), (int)((yy + yy_mid) / 2.0) };
+
+	HBRUSH hOldBrush, hRedBrush;
+
+	hRedBrush = CreateSolidBrush(RGB(254, 0, 0));   // to fill with red
+	hOldBrush = SelectBrush(hdc, hRedBrush);
+
+	HPEN hNewPen = CreatePen(PS_SOLID, (int)(width), RGB(0,0,0));
+	HPEN hOldPen = SelectPen(hdc, hNewPen);
+	
+	LPPOINT lpPoint = new POINT();
+	
+	MoveToEx(hdc, (int)xx, (int)(yy - width / 2.0), lpPoint);
+	LineTo(hdc,(int)xx,(int)yy_end);
+	
+	SelectObject(hdc, hNewPen);
+	Polygon(hdc, polPoints, 10);
+
+	// Ellipse(hdc, (long)(aLeft + lenRatio), (long)(aTop + lenRatio), (long)(aRight - lenRatio), (long)(aBottom - lenRatio));
+	
+	SelectPen(hdc, hOldPen);
+	SelectBrush(hdc, hOldBrush);
+	DeleteObject(hRedBrush); 
+	DeleteObject(hNewPen);
+	
 }
 
 void Cell::WriteText(HDC hdc, int aLeft, int aTop, int aRight, int aBottom)

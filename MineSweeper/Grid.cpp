@@ -2,6 +2,8 @@
 #include "Grid.h"
 #include <stdlib.h>
 #include <time.h>
+#include <string>
+#include <sstream>
 
 Grid::Grid()
 {
@@ -10,6 +12,7 @@ Grid::Grid()
 	mbLost = false;
 	mbWon = false;
 	mNumBees = -1;
+	mFlaggedBees = 0;
 }
 
 Grid::~Grid()
@@ -25,11 +28,12 @@ void Grid::Initialize(HWND hWnd, int aGridSize, int numBees)
 	mbLost = false;
 	mbWon = false;
 	mNumBees = numBees;
+	mFlaggedBees = 0;
 
 	RECT lpRect;
 	GetClientRect(mhWnd, &lpRect);
 	int x = lpRect.right - lpRect.left;
-	int y = lpRect.bottom - lpRect.top;
+	int y = lpRect.bottom - lpRect.top - 25;
 	double lGridPixelSize = min(x, y);
 
 	double lOffset = 0.01 * lGridPixelSize;
@@ -40,6 +44,11 @@ void Grid::Initialize(HWND hWnd, int aGridSize, int numBees)
 	mTop = (int)(lTopOffset);
 	mLeft = (int)(lLeftOffset);
 	mPixelLength = (int)(lLength);
+
+	mpTextRect.top = (LONG)(mTop + lGridPixelSize);
+	mpTextRect.left = (LONG)(mLeft);
+	mpTextRect.right = (LONG)(mLeft + lGridPixelSize);
+	mpTextRect.bottom = (LONG)(mpTextRect.top + 15);
 
 	InitializeCells();
 }
@@ -140,8 +149,10 @@ void Grid::DeleteCells()
 	_CellInitialized = false;
 }
 
-bool Grid::OnClick(long xx, long yy)
+bool Grid::OnRightClick(long xx, long yy)
 {
+	if (mbWon) return false;
+
 	int lengthX = xx - mLeft;
 	int lengthY = yy - mTop;
 
@@ -152,11 +163,43 @@ bool Grid::OnClick(long xx, long yy)
 	
 	if (indexI < mSize && indexJ < mSize)
 	{
-		if (mbWon) return false;
+		if (myCells[indexI][indexJ].IsExposed())
+			return false;
+
+		if (myCells[indexI][indexJ].IsFlagged())
+		{
+			myCells[indexI][indexJ].UnFlagCell();
+			--mFlaggedBees;
+		}
+		else
+		{
+			myCells[indexI][indexJ].FlagCell();
+			++mFlaggedBees;
+		}
+		return true;
+	}
+	return false;
+}
+
+bool Grid::OnClick(long xx, long yy)
+{
+	if (mbWon) return false;
+
+	int lengthX = xx - mLeft;
+	int lengthY = yy - mTop;
+
+	if (lengthX < 0 || lengthY < 0) return false;
+
+	int indexI = lengthX / mPixelLength;
+	int indexJ = lengthY / mPixelLength;
+
+	if (indexI < mSize && indexJ < mSize)
+	{
 		if (myCells[indexI][indexJ].IsExposed()) return false;
+		if (myCells[indexI][indexJ].IsFlagged()) return false;
 
 		myCells[indexI][indexJ].ExposeCell();
-		
+
 		if (myCells[indexI][indexJ].HasBee())
 			ExposeAllBees();
 		else if (myCells[indexI][indexJ].Neighbors() == 0)
@@ -259,13 +302,44 @@ void Grid::Draw()
 		}
 	}
 
-	DeleteObject(hRedBrush);
+	DrawInformation(hdc);
 
 	EndPaint(mhWnd, &ps);
+
 
 	if (mbWon)
 		DisplayMessage((LPCWSTR)L"Congratulations. You have Won. Please play again.", (LPCWSTR)L"Congratulations...");
 	else if (mbLost)
 		DisplayMessage((LPCWSTR)L"Sorry. You have Lost. Please try again.", (LPCWSTR)L"Sorry..");
 
+}
+
+void Grid::DrawInformation(HDC hdc)
+{
+	std::string TotalBees = "TOTAL BEES = " + std::to_string(mNumBees);
+	std::string TotalFlagged = "TOTAL FLAGGED = " + std::to_string(mFlaggedBees);
+
+	const char* resultTotalBees = TotalBees.c_str();
+	const char* resultTotalFlagged = TotalFlagged.c_str();
+
+	wchar_t* wStringTotalBees = new wchar_t[25];
+	wchar_t* wStringTotalFlagged = new wchar_t[25];
+
+	MultiByteToWideChar(CP_ACP, 0, resultTotalBees, -1, wStringTotalBees,25);
+	MultiByteToWideChar(CP_ACP, 0, resultTotalFlagged, -1, wStringTotalFlagged, 25);
+	
+	SetTextColor(hdc, RGB(0, 0, 0));
+	
+	HFONT font = CreateFont(18, 7, 0, 0, FW_BOLD, false, false,false,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+		DEFAULT_QUALITY, DEFAULT_PITCH,
+		(LPCWSTR)L"Arial");
+	
+	HFONT hFontOld = (HFONT)SelectObject(hdc, font);
+
+	DrawText(hdc, wStringTotalBees, -1, &mpTextRect, DT_SINGLELINE | DT_LEFT | DT_VCENTER);
+	DrawText(hdc, wStringTotalFlagged, -1, &mpTextRect, DT_SINGLELINE | DT_RIGHT | DT_VCENTER);
+
+	SelectObject(hdc, hFontOld);
+	DeleteObject(font);
 }

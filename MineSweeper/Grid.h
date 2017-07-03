@@ -13,7 +13,9 @@ public:
 	void DeleteCells();
 
 	void Draw();
+	void DrawInformation(HDC hdc);
 	bool OnClick(long ax, long ay);
+	bool OnRightClick(long ax, long ay);
 	void ExposeAllBees();
 	void ExposeNeighboringZeros(int i, int j);
 	bool CheckIfWon();
@@ -26,12 +28,14 @@ public:
 	void DisplayMessage(LPCWSTR aMainMessage, LPCWSTR aMenuItem);
 
 private:
+	RECT mpTextRect;
 	int mSize; // = n = size of a n x n grid
 	HWND mhWnd; // Window Instance
 	int mTop;
 	int mLeft;
 	int mPixelLength; // pixel size of each rectangle
 	int mNumBees;
+	int mFlaggedBees;
 
 	Cell** myCells;
 	bool _CellInitialized;

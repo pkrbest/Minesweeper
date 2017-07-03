@@ -199,12 +199,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		myGrid.Draw();
 		return(0);
-	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
 	{
 		if (myGrid.HasLost()) break;
 		long xPos = LOWORD(lParam);
 		long yPos = HIWORD(lParam);
 		if (myGrid.OnClick(xPos, yPos)){
+			InvalidateRect(hWnd, NULL, true);
+		}
+		break;
+	}
+	case WM_RBUTTONUP:
+	{
+		if (myGrid.HasLost()) break;
+		long xPos = LOWORD(lParam);
+		long yPos = HIWORD(lParam);
+		if (myGrid.OnRightClick(xPos, yPos)){
 			InvalidateRect(hWnd, NULL, true);
 		}
 		break;
