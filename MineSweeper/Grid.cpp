@@ -79,7 +79,7 @@ void Grid::InitializeCells()
 void Grid::DistributeBees()
 {
 	int iix(-1), jjy(-1);
-	srand(time(NULL));
+	srand((unsigned int)(time(NULL)));
 
 	for (int i = 0; i < mNumBees; ++i)
 	{
