@@ -14,6 +14,12 @@ public:
 
 	void Draw();
 	void DrawInformation(HDC hdc);
+	RECT GetGridRect(long xx, long yy);
+	RECT GetGridRectFromIndex(int indexI, int indexJ);
+	void GetGridIndex(long xx, long yy, int& ii, int& jj);
+	RECT GetRectToPrint() { return mGridToPrint; }
+	RECT GetRectForText() { return mpTextRect; }
+	void CompareGridRect(RECT lpA);
 	bool OnClick(long ax, long ay);
 	bool OnRightClick(long ax, long ay);
 	void ExposeAllBees();
@@ -29,6 +35,7 @@ public:
 
 private:
 	RECT mpTextRect;
+	RECT mGridToPrint;
 	int mSize; // = n = size of a n x n grid
 	HWND mhWnd; // Window Instance
 	int mTop;

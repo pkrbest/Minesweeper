@@ -176,13 +176,66 @@ bool Grid::OnRightClick(long xx, long yy)
 			myCells[indexI][indexJ].FlagCell();
 			++mFlaggedBees;
 		}
+		mGridToPrint = GetGridRectFromIndex(indexI, indexJ);
 		return true;
 	}
 	return false;
 }
 
+void Grid::GetGridIndex(long xx, long yy, int& ii, int& jj)
+{
+	ii = -1; jj = -1;
+	int lengthX = xx - mLeft;
+	int lengthY = yy - mTop;
+
+	if (lengthX < 0 || lengthY < 0)
+		return;
+
+	ii = lengthX / mPixelLength;
+	jj = lengthY / mPixelLength;
+}
+
+RECT Grid::GetGridRectFromIndex(int indexI, int indexJ)
+{
+	RECT res = {0,0,0,0};
+	res.left = mLeft + indexI * mPixelLength;
+	res.right = mLeft + (indexI + 1) * mPixelLength;
+	res.top = mTop + (indexJ)* mPixelLength;
+	res.bottom = mTop + (indexJ + 1) * mPixelLength;
+	return res;
+}
+
+RECT Grid::GetGridRect(long xx, long yy)
+{
+	RECT res = {0,0,0,0};
+	int indexI, indexJ;
+
+	GetGridIndex(xx, yy, indexI, indexJ);
+	if (indexI < 0 || indexJ < 0)
+		return{ 0, 0, 0, 0 };
+
+	return GetGridRectFromIndex(indexI, indexJ);
+}
+
+void Grid::CompareGridRect(RECT lpA)
+{
+	if (lpA.left != 0 && (lpA.left < mGridToPrint.left || mGridToPrint.left == 0)) 
+		mGridToPrint.left = lpA.left;
+
+	if (lpA.right != 0 && (lpA.right > mGridToPrint.right || mGridToPrint.right == 0))
+		mGridToPrint.right = lpA.right;
+
+	if (lpA.top != 0 && (lpA.top < mGridToPrint.top || mGridToPrint.top == 0))
+		mGridToPrint.top = lpA.top;
+
+	if (lpA.bottom != 0 && (lpA.bottom > mGridToPrint.bottom || mGridToPrint.bottom == 0))
+		mGridToPrint.bottom = lpA.bottom;
+}
+
 bool Grid::OnClick(long xx, long yy)
 {
+	mGridToPrint = { 0, 0, 0, 0 };
+
 	if (mbWon) return false;
 
 	int lengthX = xx - mLeft;
@@ -199,6 +252,7 @@ bool Grid::OnClick(long xx, long yy)
 		if (myCells[indexI][indexJ].IsFlagged()) return false;
 
 		myCells[indexI][indexJ].ExposeCell();
+		mGridToPrint = GetGridRect(xx, yy);
 
 		if (myCells[indexI][indexJ].HasBee())
 			ExposeAllBees();
@@ -236,6 +290,11 @@ void Grid::ExposeAllBees()
 		for (int j = 0; j < mSize; ++j)
 			if (myCells[i][j].HasBee()) myCells[i][j].ExposeCell();
 
+	mGridToPrint.left = Left();
+	mGridToPrint.top = Top();
+	mGridToPrint.bottom = Top() + PixelLength() * Size();
+	mGridToPrint.right = Left() + PixelLength() * Size();
+
 }
 
 void Grid::ExposeNeighboringZeros(int i, int j)
@@ -249,7 +308,13 @@ void Grid::ExposeNeighboringZeros(int i, int j)
 			if (ii == i && jj == j) continue;
 			if (myCells[ii][jj].HasNonBeeNeighbor())
 			{
+				if (myCells[ii][jj].IsFlagged())
+					--mFlaggedBees;
 				myCells[ii][jj].ExposeCell();
+
+				RECT lRect = GetGridRectFromIndex(ii, jj);
+				CompareGridRect(lRect);
+
 				if (myCells[ii][jj].Neighbors() == 0)
 				{
 					ExposeNeighboringZeros(ii, jj);

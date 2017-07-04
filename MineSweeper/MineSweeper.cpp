@@ -205,7 +205,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		long xPos = LOWORD(lParam);
 		long yPos = HIWORD(lParam);
 		if (myGrid.OnClick(xPos, yPos)){
-			InvalidateRect(hWnd, NULL, true);
+			RECT lRect = myGrid.GetGridRect(xPos, yPos);
+			InvalidateRect(hWnd, &(myGrid.GetRectToPrint()), true);
+			InvalidateRect(hWnd, &(myGrid.GetRectForText()), true);
 		}
 		break;
 	}
@@ -214,8 +216,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if (myGrid.HasLost()) break;
 		long xPos = LOWORD(lParam);
 		long yPos = HIWORD(lParam);
-		if (myGrid.OnRightClick(xPos, yPos)){
-			InvalidateRect(hWnd, NULL, true);
+		if (myGrid.OnRightClick(xPos, yPos))
+		{
+			InvalidateRect(hWnd, &(myGrid.GetRectToPrint()), true);
+			InvalidateRect(hWnd, &(myGrid.GetRectForText()), true);
 		}
 		break;
 	}
